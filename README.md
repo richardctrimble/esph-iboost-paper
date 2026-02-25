@@ -1,5 +1,7 @@
 # ESPHome iBoost Paper
 
+[![GitHub release](https://img.shields.io/github/release/richardctrimble/esph-iboost-paper.svg)](https://github.com/richardctrimble/esph-iboost-paper/releases/)
+
 An [ESPHome](https://esphome.io/) firmware for monitoring and controlling an iBoost solar immersion system using a Heltec Wireless Paper (ESP32-S3 with SX1262 radio). Exposes energy data and boost controls to [Home Assistant](https://www.home-assistant.io/).
 
 > **Note**
