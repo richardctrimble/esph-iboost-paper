@@ -5,7 +5,7 @@ substitutions:
   device_name: minibuddy-iboostpaper
   friendly_name:  Mini Buddy - iBoost Paper
   wifi_ip_address: 192.168.0.X
-  release_version: '4.3'
+  release_version: '4.4'
   
 web_server: 
      version: 3
