@@ -1,59 +1,119 @@
-# esph-iboost-paper
+# ESPHome iBoost Paper
 
-iBoost Buddy implementation using ESPHome on Heltec Wireless Paper with SX126x radio.
+An [ESPHome](https://esphome.io/) firmware for monitoring and controlling an iBoost solar immersion system using a Heltec Wireless Paper (ESP32-S3 with SX1262 radio). Exposes energy data and boost controls to [Home Assistant](https://www.home-assistant.io/).
 
-its 2 components:
+> **Note**
+> This project requires ESPHome 2026.2 or later, which includes the native SX126x radio component.
 
-**esphWirelessPaper** - to drive the screen
-**esphiBoost** - to drive the radio section and decoders
+## Features
 
-# Important
-Many thanks for the wonderful work and support from this project the original C1101 & ESP8266 implementation  [JMSwanson / ESP-Home-iBoost](https://github.com/JNSwanson/ESP-Home-iBoost) 
-
-## What it does
-
-Decodes iBoost packets on 868MHz and exposes the data to Home Assistant. Can also send boost start/cancel commands. Built it because I had problems with my CC1101 and 8266 and wanted a prebuilt board..  
-
-if you have an esp32 and sx126x you can just drop the screen part that doesnt do much yet as i havent got around writing to the screen
-
-this version is using a preview version of the sx126x esphome component that should be live in 2025.9.2.
+- **868MHz packet decoding** — listens for iBoost protocol packets and decodes energy and status data automatically.
+- **Auto-discovery** — learns the iBoost system address from received packets, no manual configuration needed.
+- **Boost control** — start and cancel manual boost commands directly from Home Assistant.
+- **E-ink display** — shows system status on the Heltec Wireless Paper's built-in e-ink screen.
+- **All-in-one board** — no separate radio module required; the Heltec Wireless Paper has everything on-board.
 
 ## Hardware
 
-- Heltec Wireless Paper V1.1 (ESP32-S3)
-- Built-in SX1262 radio (868MHz FSK)
-- E-ink display
-- Physical button on GPIO0
+| Component | Details |
+|-----------|---------|
+| Board | Heltec Wireless Paper V1.1 (ESP32-S3, 8MB flash) |
+| Radio | Built-in SX1262 (868MHz FSK) |
+| Display | Built-in e-ink (landscape) |
+| Button | GPIO0 (active low) |
+| LED | GPIO18 |
 
 ## Components
 
 ### esphiBoost
+
 Main radio protocol handler:
-- Listens for packets from iBoost system (sender/buddy/main unit)
-- Decodes energy data (today, yesterday, 7/28 days, total)
-- Sends boost control commands
+
+- Listens for packets from iBoost system (sender, buddy, main unit)
+- Decodes energy data (today, yesterday, 7-day, 28-day, total)
+- Sends boost start/cancel commands
 - Auto-discovers system address from received packets
-- Cycles through data requests (0xCA-0xCE)
+- Cycles through data request codes (0xCA-0xCE)
 
 ### esphWirelessPaper
-E-ink display wrapper:
-- Shows title, status, and data lines
-- Fast refresh for updates
-- Currently just shows basic status (display data integration TODO)
 
-## What you get in Home Assistant
+E-ink display driver:
 
-- Energy sensors for all time periods
-- Power/import readings
-- Boost time remaining
-- RSSI values for diagnostics
-- Boost start/cancel buttons
-- Configurable boost duration (15min steps)
+- Shows title, status, and data lines on the Heltec e-ink display
+- Fast-mode refresh for efficient updates
+- Basic status display (further integration planned)
+
+## Home Assistant entities
+
+### Sensors
+
+| Entity | Unit | Description |
+|--------|------|-------------|
+| iBoost Today | Wh | Energy diverted today |
+| iBoost Yesterday | Wh | Energy diverted yesterday |
+| iBoost Last 7 Days | Wh | Energy diverted in the last 7 days |
+| iBoost Last 28 Days | Wh | Energy diverted in the last 28 days |
+| iBoost Total | Wh | Total energy diverted |
+| Grid Import | W | Current grid import power |
+| iBoost Power | W | Current iBoost power consumption |
+| Manual Boost Time Remaining | Min | Time left on active manual boost |
+
+### Diagnostic sensors
+
+| Entity | Description |
+|--------|-------------|
+| RSSI iBoost | Signal strength from the iBoost main unit |
+| RSSI Buddy | Signal strength from the Buddy unit |
+| RSSI Sender | Signal strength from the Sender unit |
+| Packet Count | Total packets received |
+| Last Packet Received | Timestamp of the last decoded packet |
+
+### Controls
+
+| Entity | Description |
+|--------|-------------|
+| Manual Boost START | Start a manual boost |
+| Manual Boost CANCEL | Cancel an active manual boost |
+| Manual Boost Time | Set boost duration (0-120 minutes, 15-minute steps) |
+| LED Light | Toggle the on-board LED |
+
+### Text sensors
+
+| Entity | Description |
+|--------|-------------|
+| Mode | Current iBoost system mode |
+| Warn | Current warning status |
 
 ## Setup
 
-Just flash `minibuddy_iBoostPaper.yaml` to your Wireless Paper. The radio config matches the iBoost protocol so it should start receiving packets automatically once in range.
+1. Clone this repository.
+2. Create a `secrets.yaml` with your WiFi credentials, NTP server, and fallback password.
+3. Update the `wifi_ip_address` substitution in `minibuddy-iBoostPaper.yaml` to match your network.
+4. Flash with ESPHome: `esphome run minibuddy-iBoostPaper.yaml`
 
-im using a base.yaml for some settings, so you will need to update that, it has wifi etc in the secrets file,  also in the main yaml you will need to update as i use a fixed ip address.
+The radio is pre-configured to match the iBoost protocol (868.3MHz, 99.975kbps, sync `[0xD3, 0x91, 0xD3, 0x91]`) and will start receiving packets automatically once in range.
 
-Radio settings: 868.3MHz, 99.975kbps, sync `[0xD3, 0x91, 0xD3, 0x91]`
+### Radio configuration
+
+| Parameter | Value |
+|-----------|-------|
+| Frequency | 868.3 MHz |
+| Bitrate | 99.975 kbps |
+| Deviation | 47.6 kHz |
+| Sync word | `0xD3, 0x91, 0xD3, 0x91` |
+| CRC | 16-bit, polynomial 0x8005 |
+
+> **Tip**
+> If you have a different ESP32 with an SX126x radio, you can use just the `esphiBoost` component without `esphWirelessPaper`. Remove the display-related configuration and it will work as a headless receiver.
+
+## Licence
+
+Released under the [MIT Licence](LICENSE).
+
+### Attribution
+
+This project builds upon the following prior work, released under the MIT Licence:
+
+| Project | Author | Licence |
+|---------|--------|---------|
+| [ESP-Home-iBoost](https://github.com/JNSwanson/ESP-Home-iBoost) | [@JNSwanson](https://github.com/JNSwanson) | [MIT](https://github.com/JNSwanson/ESP-Home-iBoost/blob/main/LICENSE) |
