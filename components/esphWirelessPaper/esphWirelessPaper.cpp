@@ -2,6 +2,14 @@
 #include "esphome/core/log.h"
 #include "heltec-eink-modules.h"
 #include <string>
+#include <unistd.h>
+#include <errno.h>
+
+// Fix for undefined reference to `rmdir` in Arduino ESP32 v3.0.x
+extern "C" int __attribute__((weak)) rmdir(const char *path) {
+    errno = ENOSYS;
+    return -1;
+}
 
 namespace esphome
 {
