@@ -225,7 +225,7 @@ sensor:
   - platform: template
     id: heating_boost_time
     name: "Manual Boost Time Remaining"
-    unit_of_measurement: Min
+    unit_of_measurement: min
     accuracy_decimals: 0
     device_class: duration
     icon: mdi:timer
