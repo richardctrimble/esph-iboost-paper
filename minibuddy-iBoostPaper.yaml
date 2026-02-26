@@ -286,7 +286,7 @@ number:
     name: "Manual Boost Time"
     id: boostTime
     icon: mdi:timer
-    unit_of_measurement: Minutes
+    unit_of_measurement: min
     optimistic: true
     initial_value: 15
     min_value: 0
