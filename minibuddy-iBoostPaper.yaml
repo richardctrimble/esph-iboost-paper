@@ -168,6 +168,8 @@ sensor:
     unit_of_measurement: W
     accuracy_decimals: 0
     icon: mdi:solar-power
+    device_class: power
+    state_class: measurement
     
   - platform: template
     id: heating_power
@@ -176,6 +178,7 @@ sensor:
     accuracy_decimals: 0
     device_class: power
     icon: mdi:solar-power
+    state_class: measurement
 
   - platform: template
     id: heating_today
